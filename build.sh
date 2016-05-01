@@ -1,0 +1,2 @@
+make nanopi2_android_defconfig
+make uImage
