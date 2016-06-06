@@ -47,6 +47,7 @@
         android:visibility="gone" />
 
     <LinearLayout
+        android:visibility ="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal" >
@@ -62,6 +63,7 @@
     </LinearLayout>
 
     <LinearLayout
+           android:visibility ="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
@@ -91,6 +93,7 @@
     </LinearLayout>
 
     <LinearLayout
+           android:visibility ="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal" >
@@ -104,5 +107,10 @@
             android:text="下" />
 
     </LinearLayout>
+
+    <SurfaceView
+        android:id="@+id/surfaceView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
 
 </LinearLayout>
