@@ -3,9 +3,7 @@ package com.oo.pwm;
 
 
 import com.oo.camera.OCamera;
-
 import android.app.Activity;
-import android.hardware.Camera;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -16,18 +14,19 @@ import android.view.View;
 public class PwmActivity extends Activity {
 	private static final String TAG = "PWM";
 	private Moto mMoto;
-	private final int STEP = 444; 
-	private boolean bT = false;
 	private int HZ = 100;
-	private SurfaceView mSurfaceView;
-	private OCamera mCameraView;
+	private SurfaceView mCameraSurfaceView;
+	private SurfaceView mSurfaceDrawView;
+	private OCamera mCamera;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_pwm);
 		//mSurfaceHolder = findViewById(id)
-		mSurfaceView = (SurfaceView) findViewById(R.id.surfaceView);
-		mCameraView = new OCamera(getApplicationContext(), mSurfaceView);
+		mCameraSurfaceView = (SurfaceView) findViewById(R.id.SurfaceViewCamera);
+		mSurfaceDrawView = (SurfaceView) findViewById(R.id.SurfaceViewDraw);
+		mCamera = new OCamera(getApplicationContext(), mCameraSurfaceView, mSurfaceDrawView);
 		mMoto = new Moto();
 		mMoto.open();
 		mMoto.setFrequence(HZ);
