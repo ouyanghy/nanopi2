@@ -645,7 +645,11 @@ static struct i2c_board_info __initdata ds1307_i2c_bdi = {
 	.irq	= -1,
 };
 #endif
-
+// 1 00000 0
+static struct i2c_board_info __initdata pca9685_i2c_bdi = {
+	I2C_BOARD_INFO("pca9685", 0X40),
+	.irq	= -1,
+};
 #if defined(CONFIG_SENSORS_PCF8591_MODULE)
 #define PCF8591_I2C_BUS (0)
 
@@ -1847,6 +1851,9 @@ void __init nxp_board_devices_register(void)
 	printk("plat: add pcf8591 device\n");
 	i2c_register_board_info(DS1307_I2C_BUS, &pcf8591_i2c_bdi, 1);
 #endif
+	printk("plat: add pwm pca9685 device\n");
+	i2c_register_board_info(0, &pca9685_i2c_bdi, 1);
+
 
 #if defined(CONFIG_RFKILL_NXP)
 	printk("plat: add device rfkill\n");
@@ -1880,7 +1887,6 @@ void __init nxp_board_devices_register(void)
 	printk("plat: add device pwm_led\n");
 	platform_device_register(&pwm_led_device);
 #endif
-
 	/* END */
 	printk("\n");
 }
