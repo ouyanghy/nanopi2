@@ -1,42 +1,54 @@
 package com.oo.camera;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.hardware.Camera;
-import android.hardware.Camera.Face;
-import android.hardware.Camera.FaceDetectionListener;
+import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
+import android.os.Handler;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-
-public class OCamera  implements SurfaceHolder.Callback, FaceDetectionListener {
+public class OCamera implements SurfaceHolder.Callback {
 	private static final String TAG = "OCamera";
 	private Camera mCamera;
-	private ODraw mDraw;
 	private SurfaceHolder mCameraHolder;
 	private SurfaceHolder mDrawHolder;
-	private final int MOUNT_ANGLE = 270;
-	public static final int GET_FACE = 1;
-	
-	public OCamera(Context context, SurfaceView camera, SurfaceView draw) {
-		
+	private OFaceDetetor mFaceDetetor;
+
+	private final int PREVIEW_ANGLE = 270;
+	private final int PICTURE_ANGLE = 270;
+	public static final int GET_PICTURE = 1;
+	public static final int GET_FACE = 2;
+	private final int FACE_DETE_TRICK = 16;
+	private int mWidth, mHeight;
+	private boolean isTransfer = false;
+	private byte[] mRgbByte;
+	private Handler mHandle;
+	private int mFaceDeteCount;
+
+	public OCamera(Context context, SurfaceView camera, SurfaceView draw, Handler handle) {
+
 		// TODO Auto-generated constructor stub
 		camera.setZOrderOnTop(false);
 		draw.setZOrderOnTop(true);
-	
+
 		mCameraHolder = camera.getHolder();
 		mDrawHolder = draw.getHolder();
 		mDrawHolder.setFormat(PixelFormat.TRANSLUCENT);
-		
-		
+
 		mCameraHolder.addCallback(this);
-		mDraw = new ODraw(draw);
-		// mCameraHolder.setType(SurfaceHolder.SURFACE_TYPE_GPU);
+		mHandle = handle;
 
 	}
 
@@ -48,24 +60,59 @@ public class OCamera  implements SurfaceHolder.Callback, FaceDetectionListener {
 
 		parameters.setPreviewSize(800, 480);
 		mCamera.setParameters(parameters);
-		mCamera.setFaceDetectionListener(this);
-		
-		mCamera.setDisplayOrientation(MOUNT_ANGLE);
+
+		mCamera.setDisplayOrientation(PREVIEW_ANGLE);
 		Size s = parameters.getPreviewSize();
-		Log.i(TAG, "width:" + s.width + " height:" + s.height);
-		if (mCamera != null) {
-			try {
-				mCamera.setPreviewDisplay(mCameraHolder);
-				mCamera.startFaceDetection();
+		mWidth = s.width;
+		mHeight = s.height;
+		Log.i(TAG, "width:" + s.width + " height:" + s.height + " format:" + parameters.getPreviewFormat());
 
-				mCamera.startPreview();
-
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
+		try {
+			mCamera.setPreviewDisplay(mCameraHolder);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+
+		mCamera.startPreview();
+		mCamera.setPreviewCallback(mPreviewCallBack);
+
+	}
+
+	private PreviewCallback mPreviewCallBack = new PreviewCallback() {
+
+		@Override
+		public void onPreviewFrame(byte[] data, Camera camera) {
+			// TODO Auto-generated method stub
+			if (isTransfer == false) {
+				Log.i(TAG, "data length" + data.length);
+				isTransfer = true;
+
+				Bitmap bitmap = yuv420sp2rgb(data);
+				bitmap = adjustPhotoRotation(bitmap, PICTURE_ANGLE);
+
+				if (mFaceDeteCount++ > FACE_DETE_TRICK) {
+					mFaceDetetor = new OFaceDetetor(bitmap.getWidth(), bitmap.getHeight(), 1);
+
+					mFaceDetetor.findFace(bitmap);
+
+					mFaceDeteCount = 0;
+				}
+				mHandle.obtainMessage(GET_PICTURE, bitmap).sendToTarget();
+				isTransfer = false;
+			} else {
+
+			}
+		}
+	};
+
+	Bitmap yuv420sp2rgb(byte[] data) {
+		YuvImage yuv = new YuvImage(data, ImageFormat.NV21, mWidth, mHeight, null);
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		yuv.compressToJpeg(new Rect(0, 0, mWidth, mHeight), 100, out);
+		mRgbByte = out.toByteArray();
+		Bitmap bitmap = BitmapFactory.decodeByteArray(mRgbByte, 0, mRgbByte.length);
+		return bitmap;
 	}
 
 	@Override
@@ -77,14 +124,15 @@ public class OCamera  implements SurfaceHolder.Callback, FaceDetectionListener {
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		// TODO Auto-generated method stub
-		if (mCamera != null) {
-			mCamera.stopPreview();
-			mCamera.release();
-		}
+		// onRelease();
 	}
 
 	public void onRelease() {
+		mCamera.setPreviewCallback(null);
 		surfaceDestroyed(mCameraHolder);
+		mCamera.stopPreview();
+		mCamera.release();
+		mCamera = null;
 	}
 
 	private void printPoint(Point p) {
@@ -92,16 +140,13 @@ public class OCamera  implements SurfaceHolder.Callback, FaceDetectionListener {
 			Log.i(TAG, "point:(" + p.x + "," + p.y + ")");
 	}
 
-	@Override
-	public void onFaceDetection(final Face[] faces, Camera camera) {
-		// TODO Auto-generated method stub
+	Bitmap adjustPhotoRotation(Bitmap bmpSrc, final int orientationDegree) {
 
-		if (faces.length > 0 && faces != null && faces[0] != null) {
-			printPoint(faces[0].leftEye);
-			printPoint(faces[0].rightEye);
-			printPoint(faces[0].mouth);
-			Log.i(TAG, "score:" + faces[0].score);
-			mDraw.draw(faces[0].leftEye, faces[0].rightEye, faces[0].mouth);
-		}
+		Matrix m = new Matrix();
+
+		m.postRotate(orientationDegree);
+		Bitmap bmp = Bitmap.createBitmap(bmpSrc, 0, 0, bmpSrc.getWidth(), bmpSrc.getHeight(), m, true);
+
+		return bmp;
 	}
 }

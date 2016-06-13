@@ -4,12 +4,16 @@ package com.oo.pwm;
 
 import com.oo.camera.OCamera;
 import android.app.Activity;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.ImageView;
 
 public class PwmActivity extends Activity {
 	private static final String TAG = "PWM";
@@ -18,15 +22,19 @@ public class PwmActivity extends Activity {
 	private SurfaceView mCameraSurfaceView;
 	private SurfaceView mSurfaceDrawView;
 	private OCamera mCamera;
-
+	private MHandle mHandle;
+	private ImageView mPictureView;
+	private boolean isDraw =false;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_pwm);
 		//mSurfaceHolder = findViewById(id)
+		mHandle = new MHandle();
 		mCameraSurfaceView = (SurfaceView) findViewById(R.id.SurfaceViewCamera);
 		mSurfaceDrawView = (SurfaceView) findViewById(R.id.SurfaceViewDraw);
-		mCamera = new OCamera(getApplicationContext(), mCameraSurfaceView, mSurfaceDrawView);
+		mPictureView = (ImageView) findViewById(R.id.imageViewPicture);
+		mCamera = new OCamera(getApplicationContext(), mCameraSurfaceView, mSurfaceDrawView, mHandle);
 		mMoto = new Moto();
 		mMoto.open();
 		mMoto.setFrequence(HZ);
@@ -56,6 +64,7 @@ public class PwmActivity extends Activity {
 	{
 		mMoto.free();
 		mMoto.close();
+		mCamera.onRelease();
 		super.onDestroy();
 	}
 	
@@ -106,5 +115,23 @@ public class PwmActivity extends Activity {
 	{
 		mMoto.adjustPostionFinish();
 		Log.i(TAG, "onClickOk");
+	}
+	
+	public class MHandle extends Handler {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case OCamera.GET_PICTURE:
+				//Log.i(TAG, "get picture1");
+				Bitmap bmp = (Bitmap) msg.obj;
+				if (bmp == null || isDraw == true)
+					return;
+				//Log.i(TAG, "get picture2");
+				isDraw = true;
+				mPictureView.setImageBitmap(bmp);
+		
+				isDraw = false;
+			}
+		}
 	}
 }
