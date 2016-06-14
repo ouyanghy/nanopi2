@@ -6,8 +6,10 @@ import com.oo.pwm.Moto;
 import android.graphics.PointF;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 public class OWorkThread extends Thread {
+	private static final String TAG = "MOVE";
 	public final int DISTANCE_MOVE = 30;
 	public final int MIDDLE_HORZONTAL = 400;
 	public final int MIDDLE_VIRTICAL = 300;
@@ -15,17 +17,22 @@ public class OWorkThread extends Thread {
 	public final int DISTANCE_LEVEL2 = 200;
 	public final int DISTANCE_LEVEL3 = 300;
 	public final int DEGREE_LEVEL1 = 20;
-	public final int DEGREE_LEVEL2 = 40;
-	public final int DEGREE_LEVEL3 = 60;
+	public final int DEGREE_LEVEL2 = 30;
+	public final int DEGREE_LEVEL3 = 40;
 	private Moto mMoto;
-
+	private OHandle mHandle;
 	private boolean bWork = true, bContinue = false;
 	private PointF mPoint;
 
 	public OWorkThread(Moto moto) {
 		mMoto = moto;
+		mHandle = new OHandle();
 	}
 
+	public Handler getHandle()
+	{
+		return mHandle;
+	}
 	public void setWork(boolean b) {
 		bWork = b;
 	}
@@ -72,7 +79,7 @@ public class OWorkThread extends Thread {
 	}
 
 	private void calcuteAndMove(PointF point) {
-
+		Log.i(TAG, "(x," + point.x + "," + point.y + ")");
 		boolean hdirection = getDirection(MIDDLE_HORZONTAL, (int) point.x);
 		boolean vdirection = getDirection(MIDDLE_VIRTICAL, (int) point.y);
 
@@ -83,10 +90,12 @@ public class OWorkThread extends Thread {
 
 		if (hordegree > 0) {
 			mMoto.addHorDegree(hordegree, hdirection, false);
+			Log.i(TAG, "h degree" + hordegree + " direction:" + hdirection );
 		}
 
 		if (verdegree > 0) {
 			mMoto.addVerDegree(verdegree, vdirection, false);
+			Log.i(TAG, "v degree" + hordegree + " direction:" + hdirection );
 		}
 	}
 
@@ -97,6 +106,7 @@ public class OWorkThread extends Thread {
 			case OCamera.GET_POINT:
 				mPoint = (PointF) msg.obj;
 				bContinue = true;
+				Log.i(TAG, "get point");
 			}
 		}
 	}

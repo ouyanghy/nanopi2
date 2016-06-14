@@ -27,8 +27,8 @@ public class OCamera implements SurfaceHolder.Callback {
 	private SurfaceHolder mDrawHolder;
 	private OFaceDetetor mFaceDetetor;
 
-	private final int PREVIEW_ANGLE = 270;
-	private final int PICTURE_ANGLE = 270;
+	private final int PREVIEW_ANGLE = 180;
+	private final int PICTURE_ANGLE = 180;
 	public static final int GET_PICTURE = 1;
 	public static final int GET_FACE = 2;
 	public static final int GET_POINT = 3;
@@ -60,7 +60,7 @@ public class OCamera implements SurfaceHolder.Callback {
 		mCamera = Camera.open(0);
 		Camera.Parameters parameters = mCamera.getParameters();
 
-		parameters.setPreviewSize(800, 480);
+		parameters.setPreviewSize(800, 600);
 		mCamera.setParameters(parameters);
 
 		mCamera.setDisplayOrientation(PREVIEW_ANGLE);

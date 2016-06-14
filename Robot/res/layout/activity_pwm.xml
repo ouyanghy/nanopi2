@@ -9,6 +9,33 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.oo.work.PwmActivity" >
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:onClick="onClickRequest"
+            android:text="request" />
+
+        <Button
+            android:id="@+id/button7"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:onClick="onClickHz"
+            android:text="hz" />
+
+        <Button
+            android:id="@+id/button3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onClickFree"
+            android:text="free" />
+
+    </LinearLayout>
+
     <Button
         android:id="@+id/button1"
         android:layout_width="fill_parent"
@@ -16,27 +43,6 @@
         android:onClick="onClickOpen"
         android:text="open"
         android:visibility="gone" />
-
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="fill_parent"
-        android:layout_height="60dp"
-        android:onClick="onClickRequest"
-        android:text="request" />
-
-    <Button
-        android:id="@+id/button3"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:onClick="onClickFree"
-        android:text="free" />
-
-    <Button
-        android:id="@+id/button7"
-        android:layout_width="fill_parent"
-        android:layout_height="60dp"
-        android:onClick="onClickHz"
-        android:text="hz" />
 
     <Button
         android:id="@+id/button8"
@@ -50,7 +56,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:visibility="gone" >
+        android:visibility="visible" >
 
         <Button
             android:id="@+id/button9"
@@ -64,7 +70,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone" >
+        android:visibility="visible" >
 
         <Button
             android:id="@+id/button4"
@@ -94,7 +100,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:visibility="gone" >
+        android:visibility="visible" >
 
         <Button
             android:id="@+id/button10"
@@ -104,6 +110,12 @@
             android:onClick="onClickDown"
             android:text="下" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView" />
 
     <FrameLayout
         android:layout_width="fill_parent"

@@ -4,19 +4,19 @@ package com.oo.work;
 
 import com.oo.camera.OCamera;
 import com.oo.pwm.Moto;
-
-
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.PointF;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.View;
+import android.webkit.WebSettings.TextSize;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 public class PwmActivity extends Activity {
 	private static final String TAG = "WORK";
@@ -28,11 +28,14 @@ public class PwmActivity extends Activity {
 	private MHandle mHandle;
 	private ImageView mPictureView;
 	private boolean isDraw =false;
+	private OWorkThread mWork;
+	private TextView mTv;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_pwm);
 		//mSurfaceHolder = findViewById(id)
+		mTv = (TextView) findViewById(R.id.tv);
 		mHandle = new MHandle();
 		mCameraSurfaceView = (SurfaceView) findViewById(R.id.SurfaceViewCamera);
 		mSurfaceDrawView = (SurfaceView) findViewById(R.id.SurfaceViewDraw);
@@ -41,6 +44,10 @@ public class PwmActivity extends Activity {
 		mMoto = new Moto();
 		mMoto.open();
 		mMoto.setFrequence(HZ);
+		
+		mWork = new OWorkThread(mMoto);
+		mWork.start();
+		
 	}
 
 	@Override
@@ -115,6 +122,14 @@ public class PwmActivity extends Activity {
 				mPictureView.setImageBitmap(bmp);
 				
 				isDraw = false;
+				break;
+			case OCamera.GET_POINT:
+				mWork.getHandle().obtainMessage(msg.what, msg.obj).sendToTarget();
+				PointF p = (PointF) msg.obj;
+				mTv.setTextColor(Color.RED);
+				mTv.setTextSize(25);
+				mTv.setText("Middle Point:" + "(" + (int)p.x + "," + (int)p.y + ")");
+				break;
 			}
 		}
 	}

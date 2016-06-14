@@ -26,6 +26,7 @@ public class MotoThread extends Thread{
 
 	@Override
 	public void run() {
+		mPwm.request();
 		mCall.setGrpState(iGrp, true);
 		if (bDirection == Moto.DIRECTION_LEFT || bDirection == Moto.DIRECTION_UP) {
 			mPwm.config(iGrp * 4 	, STEP * 0, STEP * 3 - 1);

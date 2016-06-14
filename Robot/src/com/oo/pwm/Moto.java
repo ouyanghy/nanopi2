@@ -6,8 +6,8 @@ public class Moto {
 	private final int H_INIT_POSITION = 180;
 	private final int V_INIT_POSITION = 180;
 	private final int ADJUST_STEP = 20;
-	public final static boolean DIRECTION_LEFT = true;
-	public final static boolean DIRECTION_RIGHT = false;
+	public final static boolean DIRECTION_LEFT = false;
+	public final static boolean DIRECTION_RIGHT = true;
 	public final static boolean DIRECTION_UP = true;
 	public final static boolean DIRECTION_DOWN = false;
 	public final static int GROUP_HORIZONTAL = 1;
