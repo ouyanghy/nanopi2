@@ -9,6 +9,7 @@ import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
@@ -30,6 +31,7 @@ public class OCamera implements SurfaceHolder.Callback {
 	private final int PICTURE_ANGLE = 270;
 	public static final int GET_PICTURE = 1;
 	public static final int GET_FACE = 2;
+	public static final int GET_POINT = 3;
 	private final int FACE_DETE_TRICK = 16;
 	private int mWidth, mHeight;
 	private boolean isTransfer = false;
@@ -94,8 +96,9 @@ public class OCamera implements SurfaceHolder.Callback {
 				if (mFaceDeteCount++ > FACE_DETE_TRICK) {
 					mFaceDetetor = new OFaceDetetor(bitmap.getWidth(), bitmap.getHeight(), 1);
 
-					mFaceDetetor.findFace(bitmap);
-
+					PointF p = mFaceDetetor.findFace(bitmap);
+					if (p != null)
+						mHandle.obtainMessage(GET_POINT, p).sendToTarget();
 					mFaceDeteCount = 0;
 				}
 				mHandle.obtainMessage(GET_PICTURE, bitmap).sendToTarget();

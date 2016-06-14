@@ -3,9 +3,9 @@ package com.oo.pwm;
 public class Moto {
 	private final int H_LIMIT = 180;
 	private final int V_LIMIT = 180;
-	private final int H_INIT_POSITION = 90;
-	private final int V_INIT_POSITION = 90;
-	private final int ADJUST_STEP = 30;
+	private final int H_INIT_POSITION = 180;
+	private final int V_INIT_POSITION = 180;
+	private final int ADJUST_STEP = 20;
 	public final static boolean DIRECTION_LEFT = true;
 	public final static boolean DIRECTION_RIGHT = false;
 	public final static boolean DIRECTION_UP = true;
@@ -18,8 +18,8 @@ public class Moto {
 	private int iVerDegree;
 
 	private boolean bGroupState[] = new boolean[4];
-	
-	public Moto( ) {
+
+	public Moto() {
 		mPwm = new Pwm();
 	}
 
@@ -43,7 +43,7 @@ public class Moto {
 		int ret = mPwm.hz(hz);
 		if (ret == 0)
 			iFrequence = hz;
-		
+
 		return ret;
 	}
 
@@ -65,37 +65,45 @@ public class Moto {
 	private boolean addDegree(int grp, int degree, boolean direction) {
 		if (grp > 3)
 			return false;
-		
+
 		if (bGroupState[grp])
 			return false;
-		
+
 		new MotoThread(mPwm, grp, Math.abs(degree), iFrequence, direction, mCall).start();
-		
+
 		return true;
 	}
+
 	/*
-	 * horizontal step 
+	 * horizontal step
 	 */
-	public boolean addHorDegree(int degree, boolean direction, boolean force)
-	{
+	public boolean addHorDegree(int degree, boolean direction, boolean force) {
 		if (!force)
-			if (degree + iVerDegree < 0 || (degree + iHorDegree) > H_LIMIT)
+			if (degree + iHorDegree < 0 || (degree + iHorDegree) > H_LIMIT)
 				return false;
-		
-		return addDegree(GROUP_HORIZONTAL, degree, direction);
+
+		boolean ret = addDegree(GROUP_HORIZONTAL, degree, direction);
+		if (ret) {
+			iHorDegree += degree;
+		}
+		return ret;
 	}
+
 	/*
-	 * vertical step 
+	 * vertical step
 	 */
-	public boolean addVerDegree(int degree, boolean direction, boolean force)
-	{
+	public boolean addVerDegree(int degree, boolean direction, boolean force) {
+
 		if (!force)
 			if (degree + iVerDegree < 0 || (degree + iVerDegree) > V_LIMIT)
 				return false;
-		
-		return addDegree(GROUP_VERTICAL, degree, direction);
+		boolean ret = addDegree(GROUP_VERTICAL, degree, direction);
+		if (ret) {
+			iVerDegree += degree;
+		}
+		return ret;
 	}
-	
+
 	/*
 	 * horizontal degree
 	 */
@@ -118,6 +126,7 @@ public class Moto {
 		}
 		return ret;
 	}
+
 	/*
 	 * vertical degree
 	 */
@@ -134,7 +143,7 @@ public class Moto {
 		else
 			direction = DIRECTION_DOWN;
 
-		ret = addDegree(GROUP_VERTICAL ,add, direction);
+		ret = addDegree(GROUP_VERTICAL, add, direction);
 		if (ret) {
 			iVerDegree = degree;
 		}
@@ -142,13 +151,13 @@ public class Moto {
 	}
 
 	/*
-	 * move to midlle position
-	 * ensure your previous position is right 
+	 * move to midlle position ensure your previous position is right
 	 */
-	public void setInitPostion( ) {
-		setHorDegree( H_INIT_POSITION, true);
-		setVerDegree( V_INIT_POSITION, true);
+	public void setInitPostion() {
+		setHorDegree(H_INIT_POSITION, true);
+		setVerDegree(V_INIT_POSITION, true);
 	}
+
 	/*
 	 * set init position after finsh adjust
 	 */
@@ -179,12 +188,12 @@ public class Moto {
 
 		addVerDegree(step, direction, true);
 	}
-	
+
 	/*
 	 * tell me MotoThread work finish
 	 */
 	private MotoFinshCall mCall = new MotoFinshCall() {
-		
+
 		@Override
 		public void setGrpState(int grp, boolean state) {
 			// TODO Auto-generated method stub

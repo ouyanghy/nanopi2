@@ -27,11 +27,11 @@ public class OFaceDetetor {
 		//Log.i(TAG, "init width:" +mWidth + " height:" +mHeight);
 	}
 	
-	public void findFace(Bitmap bmp)
+	public PointF findFace(Bitmap bmp)
 	{
 		if (bmp == null) {
 			Log.i(TAG, "null ptr");
-			return;
+			return null;
 		}
 		//Log.i(TAG, "width:" +bmp.getWidth() + " height:" + bmp.getHeight());
 		//Log.i("CTIME", "====================================================");
@@ -47,14 +47,16 @@ public class OFaceDetetor {
 		//Log.i("CTIME ", "find   :" + (System.currentTimeMillis() - time));
 		//time = System.currentTimeMillis();
 		if (number > 0) {
-			drawEye(bmp, mFaces);
+			PointF p = drawEye(bmp, mFaces);
 		//	Log.i("CTIME ", "draw   :" + (System.currentTimeMillis() - time));
 		//	time = System.currentTimeMillis();
+			return p;
 		}
 		Log.i(TAG, "face:" + number);
+		return null;
 	}
 	
-	private void drawEye(Bitmap bmp, Face[] faces) {
+	private PointF drawEye(Bitmap bmp, Face[] faces) {
 		// TODO Auto-generated method stub
 		Face face = faces[0];
 		Point left = new Point();
@@ -72,6 +74,7 @@ public class OFaceDetetor {
 		
 		canvas.drawCircle(left.x, left.y, 8, new Paint(Color.RED));
 		canvas.drawCircle(right.x, right.y, 8, new Paint(Color.RED));
+		return middle;
 	}
 
 	private Bitmap convert(Bitmap bitmap, Bitmap.Config config) {

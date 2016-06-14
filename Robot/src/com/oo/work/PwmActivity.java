@@ -1,8 +1,11 @@
-package com.oo.pwm;
+package com.oo.work;
 
 
 
 import com.oo.camera.OCamera;
+import com.oo.pwm.Moto;
+
+
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -16,7 +19,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 public class PwmActivity extends Activity {
-	private static final String TAG = "PWM";
+	private static final String TAG = "WORK";
 	private Moto mMoto;
 	private int HZ = 100;
 	private SurfaceView mCameraSurfaceView;
@@ -40,25 +43,6 @@ public class PwmActivity extends Activity {
 		mMoto.setFrequence(HZ);
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.pwm, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
-	}
-	
 	@Override
 	public void onDestroy()
 	{
@@ -122,14 +106,14 @@ public class PwmActivity extends Activity {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case OCamera.GET_PICTURE:
-				//Log.i(TAG, "get picture1");
+			
 				Bitmap bmp = (Bitmap) msg.obj;
 				if (bmp == null || isDraw == true)
 					return;
-				//Log.i(TAG, "get picture2");
+				
 				isDraw = true;
 				mPictureView.setImageBitmap(bmp);
-		
+				
 				isDraw = false;
 			}
 		}
