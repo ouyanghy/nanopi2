@@ -2,6 +2,8 @@ package com.oo.camera;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -32,12 +34,12 @@ public class OCamera implements SurfaceHolder.Callback {
 	public static final int GET_PICTURE = 1;
 	public static final int GET_FACE = 2;
 	public static final int GET_POINT = 3;
-	private final int FACE_DETE_TRICK = 16;
+	// private final int FACE_DETE_TRICK = 2;
 	private int mWidth, mHeight;
 	private boolean isTransfer = false;
 	private byte[] mRgbByte;
 	private Handler mHandle;
-	private int mFaceDeteCount;
+	//private int mFaceDeteCount;
 
 	public OCamera(Context context, SurfaceView camera, SurfaceView draw, Handler handle) {
 
@@ -60,6 +62,10 @@ public class OCamera implements SurfaceHolder.Callback {
 		mCamera = Camera.open(0);
 		Camera.Parameters parameters = mCamera.getParameters();
 
+		List<Size> l = parameters.getSupportedPictureSizes();
+		for (Size s : l) {
+			Log.i(TAG, "width:" + s.width + " height:" + s.height);
+		}
 		parameters.setPreviewSize(800, 600);
 		mCamera.setParameters(parameters);
 
@@ -67,7 +73,8 @@ public class OCamera implements SurfaceHolder.Callback {
 		Size s = parameters.getPreviewSize();
 		mWidth = s.width;
 		mHeight = s.height;
-		Log.i(TAG, "width:" + s.width + " height:" + s.height + " format:" + parameters.getPreviewFormat());
+		// Log.i(TAG, "width:" + s.width + " height:" + s.height + " format:" +
+		// parameters.getPreviewFormat());
 
 		try {
 			mCamera.setPreviewDisplay(mCameraHolder);
@@ -87,21 +94,21 @@ public class OCamera implements SurfaceHolder.Callback {
 		public void onPreviewFrame(byte[] data, Camera camera) {
 			// TODO Auto-generated method stub
 			if (isTransfer == false) {
-				Log.i(TAG, "data length" + data.length);
+				// Log.i(TAG, "data length" + data.length);
 				isTransfer = true;
 
 				Bitmap bitmap = yuv420sp2rgb(data);
 				bitmap = adjustPhotoRotation(bitmap, PICTURE_ANGLE);
 
-				if (mFaceDeteCount++ > FACE_DETE_TRICK) {
-					mFaceDetetor = new OFaceDetetor(bitmap.getWidth(), bitmap.getHeight(), 1);
+				// if (mFaceDeteCount++ > FACE_DETE_TRICK) {
+				mFaceDetetor = new OFaceDetetor(bitmap.getWidth(), bitmap.getHeight(), 1);
 
-					PointF p = mFaceDetetor.findFace(bitmap);
-					if (p != null)
-						mHandle.obtainMessage(GET_POINT, p).sendToTarget();
-					mFaceDeteCount = 0;
-				}
-				mHandle.obtainMessage(GET_PICTURE, bitmap).sendToTarget();
+				PointF p = mFaceDetetor.findFace(bitmap);
+				if (p != null)
+					mHandle.obtainMessage(GET_POINT, p).sendToTarget();
+				// mFaceDeteCount = 0;
+				// }
+				// mHandle.obtainMessage(GET_PICTURE, bitmap).sendToTarget();
 				isTransfer = false;
 			} else {
 

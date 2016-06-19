@@ -1,26 +1,34 @@
 package com.oo.pwm;
 
+import android.util.Log;
+
 public class Moto {
-	private final int H_LIMIT = 180;
-	private final int V_LIMIT = 180;
-	private final int H_INIT_POSITION = 180;
-	private final int V_INIT_POSITION = 180;
+	public final static int H_LIMIT = 300;
+	public final static int V_LIMIT = 100;
+	public final static int H_INIT_POSITION = 180;
+	public final static int V_INIT_POSITION = 60;
 	private final int ADJUST_STEP = 20;
-	public final static boolean DIRECTION_LEFT = false;
-	public final static boolean DIRECTION_RIGHT = true;
-	public final static boolean DIRECTION_UP = true;
-	public final static boolean DIRECTION_DOWN = false;
+	public final static int DIRECTION_LEFT = 0;
+	public final static int DIRECTION_RIGHT = 1;
+	public final static int DIRECTION_UP = 2;
+	public final static int DIRECTION_DOWN = 3;
 	public final static int GROUP_HORIZONTAL = 1;
 	public final static int GROUP_VERTICAL = 0;
+	private static final String TAG = "Moto";
 	private Pwm mPwm;
 	private int iFrequence = 200;
-	private int iHorDegree;
-	private int iVerDegree;
+	private int iHorDegree = 180;
+	private int iVerDegree = 60;
 
 	private boolean bGroupState[] = new boolean[4];
 
 	public Moto() {
 		mPwm = new Pwm();
+		mPwm.request();
+		bGroupState[0] = false;
+		bGroupState[1] = false;
+		bGroupState[2] = false;
+		bGroupState[3] = false;
 	}
 
 	public int open() {
@@ -62,12 +70,20 @@ public class Moto {
 	/*
 	 * add degree
 	 */
-	private boolean addDegree(int grp, int degree, boolean direction) {
+	private boolean addDegree(int grp, int degree, int direction) {
+		if (degree == 0) {
+				Log.i(TAG, "degree is zero");
+				return true;
+		}
+
 		if (grp > 3)
 			return false;
-
-		if (bGroupState[grp])
-			return false;
+		synchronized (this) {
+			if (bGroupState[grp]) {
+				Log.e(TAG, "addDegree failed,device is busy");
+				return false;
+			}
+		}
 
 		new MotoThread(mPwm, grp, Math.abs(degree), iFrequence, direction, mCall).start();
 
@@ -77,14 +93,23 @@ public class Moto {
 	/*
 	 * horizontal step
 	 */
-	public boolean addHorDegree(int degree, boolean direction, boolean force) {
-		if (!force)
-			if (degree + iHorDegree < 0 || (degree + iHorDegree) > H_LIMIT)
+	public boolean addHorDegree(int degree, int direction, boolean force) {
+		int calc = 0;
+		if (direction == Moto.DIRECTION_LEFT)
+			calc = iHorDegree - degree;
+		else
+			calc = iHorDegree + degree;
+
+		if (!force) {
+			if (calc < 0 || calc > H_LIMIT) {
+				Log.i(TAG, "degree is out of bround,degree + iHorDegree" + calc);
 				return false;
+			}
+		}
 
 		boolean ret = addDegree(GROUP_HORIZONTAL, degree, direction);
 		if (ret) {
-			iHorDegree += degree;
+			iHorDegree = calc;
 		}
 		return ret;
 	}
@@ -92,14 +117,21 @@ public class Moto {
 	/*
 	 * vertical step
 	 */
-	public boolean addVerDegree(int degree, boolean direction, boolean force) {
+	public boolean addVerDegree(int degree, int direction, boolean force) {
+		int calc = 0;
+		if (direction == Moto.DIRECTION_UP)
+			calc = iVerDegree - degree;
+		else
+			calc = iVerDegree + degree;
 
 		if (!force)
-			if (degree + iVerDegree < 0 || (degree + iVerDegree) > V_LIMIT)
+			if (calc < 0 || calc > V_LIMIT) {
+				Log.i(TAG, "degree is out of bround,degree + iVerDegree:" + calc);
 				return false;
+			}
 		boolean ret = addDegree(GROUP_VERTICAL, degree, direction);
 		if (ret) {
-			iVerDegree += degree;
+			iVerDegree = calc;
 		}
 		return ret;
 	}
@@ -112,7 +144,7 @@ public class Moto {
 			if (degree < 0 || degree > H_LIMIT)
 				return false;
 
-		boolean direction;
+		int direction;
 		boolean ret;
 		int add = iHorDegree - degree;
 		if (add > 0)
@@ -135,7 +167,7 @@ public class Moto {
 			if (degree < 0 || degree > V_LIMIT)
 				return false;
 
-		boolean direction;
+		int direction;
 		boolean ret;
 		int add = iVerDegree - degree;
 		if (add > 0)
@@ -169,9 +201,9 @@ public class Moto {
 	/*
 	 * for adjust by your hand
 	 */
-	public void runHorOneTime(boolean direction) {
+	public void runHorOneTime(int direction) {
 		int step;
-		if (direction)
+		if (direction == DIRECTION_LEFT)
 			step = ADJUST_STEP;
 		else
 			step = -ADJUST_STEP;
@@ -179,9 +211,9 @@ public class Moto {
 		addHorDegree(step, direction, true);
 	}
 
-	public void runVerOneTime(boolean direction) {
+	public void runVerOneTime(int direction) {
 		int step;
-		if (direction)
+		if (direction == DIRECTION_RIGHT)
 			step = ADJUST_STEP;
 		else
 			step = -ADJUST_STEP;
@@ -197,7 +229,19 @@ public class Moto {
 		@Override
 		public void setGrpState(int grp, boolean state) {
 			// TODO Auto-generated method stub
-			bGroupState[grp] = state;
+			synchronized (this) {
+				bGroupState[grp] = state;
+			}
+
 		}
 	};
+
+	
+	public boolean getWorkState(int grp) {
+	//	Log.i("MOVE", "grp:" + grp + " state:" + bGroupState[grp]);
+		synchronized (this) {
+			return bGroupState[grp];
+		}
+
+	}
 }

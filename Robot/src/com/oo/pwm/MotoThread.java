@@ -7,28 +7,29 @@ public class MotoThread extends Thread{
 	private Pwm mPwm;
 	private MotoFinshCall mCall;
 	private int iDegree;
-	private boolean bDirection;
+	private int iDirection;
 	private int iFrequence;
 	private int iGrp;
 	private final int STEP_TOTAL = 4096;
 	private final int STEP = STEP_TOTAL/9; 
 	private final double STEP_ANGLE = 5.625/ 64;
 	private final double GEAR_PRECENT = 38.0/48.0;
-	public MotoThread(Pwm pwm, int grp, int addDegree, int frequence, boolean direction, MotoFinshCall call) {
+	public MotoThread(Pwm pwm, int grp, int addDegree, int frequence, int direction, MotoFinshCall call) {
 		// TODO Auto-generated constructor stub
 		mPwm = pwm;
 		iDegree = addDegree;
-		bDirection = direction;
+		iDirection = direction;
 		iFrequence = frequence;
 		iGrp = grp;
 		mCall = call;
+		mCall.setGrpState(iGrp, true);
 	}
 
 	@Override
 	public void run() {
-		mPwm.request();
-		mCall.setGrpState(iGrp, true);
-		if (bDirection == Moto.DIRECTION_LEFT || bDirection == Moto.DIRECTION_UP) {
+	
+		
+		if (iDirection == Moto.DIRECTION_RIGHT || iDirection == Moto.DIRECTION_UP) {
 			mPwm.config(iGrp * 4 	, STEP * 0, STEP * 3 - 1);
 			mPwm.config(iGrp * 4 + 1, STEP * 2, STEP * 5 - 1);
 			mPwm.config(iGrp * 4 + 2, STEP * 4, STEP * 7 - 1);
@@ -61,13 +62,14 @@ public class MotoThread extends Thread{
 	private int calcuteTime()
 	{
 		double cycleAngle = 9 * STEP_ANGLE * GEAR_PRECENT;
-		Log.i(TAG, "STEP_ANGLE:" + STEP_ANGLE + " GEAR_PRECENT:" + GEAR_PRECENT);
+	//	Log.i(TAG, "STEP_ANGLE:" + STEP_ANGLE + " GEAR_PRECENT:" + GEAR_PRECENT);
 		if (cycleAngle == 0) {
 			Log.i(TAG, "caclute error");
 			return 0;
 		}
-		Log.i(TAG, "iDegree:" + iDegree + " iFrequeneceL" + iFrequence + " cycle:" + cycleAngle);
+	//	Log.i(TAG, "iDegree:" + iDegree + " iFrequeneceL" + iFrequence + " cycle:" + cycleAngle);
 		int time = (int) ((1000 * iDegree/iFrequence)/cycleAngle);
+		Log.i(TAG, "time:" + time);
 		return time;
 	}
 

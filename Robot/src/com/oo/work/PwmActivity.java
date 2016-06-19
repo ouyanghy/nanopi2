@@ -44,7 +44,7 @@ public class PwmActivity extends Activity {
 		mMoto = new Moto();
 		mMoto.open();
 		mMoto.setFrequence(HZ);
-		
+		mMoto.request();
 		mWork = new OWorkThread(mMoto);
 		mWork.start();
 		
@@ -55,6 +55,7 @@ public class PwmActivity extends Activity {
 	{
 		mMoto.free();
 		mMoto.close();
+		mWork.onRelease();
 		mCamera.onRelease();
 		super.onDestroy();
 	}
@@ -81,12 +82,14 @@ public class PwmActivity extends Activity {
 	public void  onClickLeft(View v)
 	{
 		mMoto.runHorOneTime(Moto.DIRECTION_LEFT);
+		
 		Log.i(TAG, "onClickLeft");
 	}
 	
 	public void onClickRight(View v)
 	{
 		mMoto.runHorOneTime(Moto.DIRECTION_RIGHT);
+	
 		Log.i(TAG, "onClickRight");
 	}
 	
@@ -102,7 +105,7 @@ public class PwmActivity extends Activity {
 		Log.i(TAG, "onClickDown");
 	}
 	
-	public void onClickOk()
+	public void onClickOK()
 	{
 		mMoto.adjustPostionFinish();
 		Log.i(TAG, "onClickOk");

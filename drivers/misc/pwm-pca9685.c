@@ -86,13 +86,15 @@
 #define PCA9685_PWM_HZ   	_IOWR(PCA9685_PWM_IOCTL_CODE, 15, uint32_t)
 
 #define GPIO_BASE		32
+
+#define CONVENT			1
 struct pca9685 {
 	struct regmap *regmap;
 	struct miscdevice misc;
 	struct file_operations ops;
 };
 struct pca9685 *pca;
-
+#if 0
 static void set_moto_power(int channel, int state)
 {
 	if (channel == 0)
@@ -106,6 +108,7 @@ static void set_moto_power(int channel, int state)
 		gpio_set_value(4 + 2* 32, state);
 	}
 }
+#endif
 static int pca9685_pwm_config(int channel, int on, int off)
 {
 	int on_h = (on & 0xf00) >> 8;
@@ -122,8 +125,13 @@ static int pca9685_pwm_config(int channel, int on, int off)
 
 static int pca9685_pwm_unconfig(int channel)
 {
+#ifdef CONVENT
+	regmap_write(pca->regmap, LED_N_ON_H(channel), 1<<4);
+	regmap_write(pca->regmap, LED_N_ON_L(channel), 0);
+#else
 	regmap_write(pca->regmap, LED_N_OFF_H(channel), 1<<4);
 	regmap_write(pca->regmap, LED_N_OFF_L(channel), 0);
+#endif
 	pr_info("%s unconfig channel:%d\n", __func__, channel);
 	return 0;
 }
@@ -132,21 +140,30 @@ static int pca9685_pwm_unconfig(int channel)
 static int pca9685_pwm_request(void)
 {
 	pr_info("%s \n", __func__);
-	set_moto_power(0, 1);
-	set_moto_power(1, 1);
+	//set_moto_power(0, 1);
+	//set_moto_power(1, 1);
+#ifdef CONVENT
 	regmap_update_bits(pca->regmap, PCA9685_MODE2, MODE2_INVRT, MODE2_INVRT);
+	regmap_write(pca->regmap, PCA9685_ALL_LED_ON_H, 1<<4);
+#endif
+	regmap_update_bits(pca->regmap, PCA9685_MODE1, MODE1_SLEEP, MODE1_SLEEP);
+	udelay(500);
 	return regmap_update_bits(pca->regmap, PCA9685_MODE1, MODE1_SLEEP, 0x0);
 }
 /*let me down*/
 static int pca9685_pwm_free(void)
 {
 	pr_info("%s \n", __func__);
+	//set_moto_power(0, 0);
+	//set_moto_power(1, 0);
+#ifdef CONVENT
+	regmap_update_bits(pca->regmap, PCA9685_MODE2, MODE2_INVRT, 0);
+	regmap_write(pca->regmap, PCA9685_ALL_LED_ON_H, 1<<4);
+#else
 	regmap_write(pca->regmap, PCA9685_ALL_LED_OFF_L, 0);
 	regmap_write(pca->regmap, PCA9685_ALL_LED_OFF_H, 0);
-	set_moto_power(0, 0);
-	set_moto_power(1, 0);
 
-	regmap_update_bits(pca->regmap, PCA9685_MODE2, MODE2_INVRT, 0);
+#endif
 	return regmap_update_bits(pca->regmap, PCA9685_MODE1, MODE1_SLEEP, MODE1_SLEEP);
 }
 /*config prescale*/
@@ -234,8 +251,8 @@ static int pca9685_pwm_probe(struct i2c_client *client,
 	regmap_write(pca->regmap, PCA9685_ALL_LED_OFF_L, 0);
 	regmap_write(pca->regmap, PCA9685_ALL_LED_OFF_H, 0);
 
-	set_moto_power(0, 0);
-	set_moto_power(1, 0);
+	//set_moto_power(0, 0);
+	//set_moto_power(1, 0);
 
 
 	pca->misc.name = "pca9685";
