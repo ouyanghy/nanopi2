@@ -29,8 +29,8 @@ public class OCamera implements SurfaceHolder.Callback {
 	private SurfaceHolder mDrawHolder;
 	private OFaceDetetor mFaceDetetor;
 
-	private final int PREVIEW_ANGLE = 180;
-	private final int PICTURE_ANGLE = 180;
+	private final int PREVIEW_ANGLE = 0;
+	private final int PICTURE_ANGLE = 0;
 	public static final int GET_PICTURE = 1;
 	public static final int GET_FACE = 2;
 	public static final int GET_POINT = 3;
@@ -101,7 +101,8 @@ public class OCamera implements SurfaceHolder.Callback {
 				bitmap = adjustPhotoRotation(bitmap, PICTURE_ANGLE);
 
 				// if (mFaceDeteCount++ > FACE_DETE_TRICK) {
-				mFaceDetetor = new OFaceDetetor(bitmap.getWidth(), bitmap.getHeight(), 1);
+				if (mFaceDetetor == null)
+					mFaceDetetor = new OFaceDetetor(bitmap.getWidth(), bitmap.getHeight(), 1);
 
 				PointF p = mFaceDetetor.findFace(bitmap);
 				if (p != null)
@@ -158,5 +159,13 @@ public class OCamera implements SurfaceHolder.Callback {
 		Bitmap bmp = Bitmap.createBitmap(bmpSrc, 0, 0, bmpSrc.getWidth(), bmpSrc.getHeight(), m, true);
 
 		return bmp;
+	}
+	
+	public int getWidth() {
+		return mWidth;
+	}
+	
+	public int getHeight() {
+		return mHeight;
 	}
 }

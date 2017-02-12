@@ -70,10 +70,10 @@ public class OFaceDetetor {
 		left.y = (int) middle.y;
 		right.y = (int) middle.y;
 		
-		Canvas canvas = new Canvas(bmp);
+/*		Canvas canvas = new Canvas(bmp);
 		
 		canvas.drawCircle(left.x, left.y, 8, new Paint(Color.RED));
-		canvas.drawCircle(right.x, right.y, 8, new Paint(Color.RED));
+		canvas.drawCircle(right.x, right.y, 8, new Paint(Color.RED));*/
 		return middle;
 	}
 
